@@ -6,6 +6,8 @@ use App\Models\Affiliate;
 use App\Models\Merchant;
 use Illuminate\Support\Str;
 use RuntimeException;
+use Mail;
+use App\Mail\SendPayout;
 
 /**
  * You don't need to do anything here. This is just to help
@@ -37,6 +39,6 @@ class ApiService
      */
     public function sendPayout(string $email, float $amount)
     {
-        //
+        Mail::to($email)->send(new SendPayout($amount, 'Payout Confirmation'));
     }
 }

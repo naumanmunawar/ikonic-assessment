@@ -6,6 +6,7 @@ use App\Services\AffiliateService;
 use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Response;
 
 class WebhookController extends Controller
 {
@@ -21,6 +22,10 @@ class WebhookController extends Controller
      */
     public function __invoke(Request $request): JsonResponse
     {
-        // TODO: Complete this method
+        $data_array = $request->all();
+        $this->orderService->processOrder($data_array);
+
+        return Response::json([]);
+
     }
 }

@@ -7,6 +7,7 @@ use App\Models\Affiliate;
 use App\Models\Merchant;
 use App\Models\Order;
 use App\Models\User;
+use Illuminate\Support\Facades\Queue;
 
 class MerchantService
 {
@@ -20,7 +21,24 @@ class MerchantService
      */
     public function register(array $data): Merchant
     {
-        // TODO: Complete this method
+        $user_data = [
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => $data['api_key'],
+            'type' => User::TYPE_MERCHANT
+        ];
+
+        $user = User::create($user_data);
+
+        $user_record = User::find($user->id);
+
+        $merchant_data = [
+            'user_id' => $user_record->id,
+            'domain' => $data['domain'],
+            'display_name' => $data['name']
+        ];
+
+        return Merchant::create($merchant_data);
     }
 
     /**
@@ -31,7 +49,14 @@ class MerchantService
      */
     public function updateMerchant(User $user, array $data)
     {
-        // TODO: Complete this method
+        $merchant = Merchant::where('user_id', $user->id)->first();
+        $merchant_data = [
+            'domain' => $data['domain'],
+            'display_name' => $data['name']
+        ];
+
+
+        return $merchant->update($merchant_data);
     }
 
     /**
@@ -43,7 +68,8 @@ class MerchantService
      */
     public function findMerchantByEmail(string $email): ?Merchant
     {
-        // TODO: Complete this method
+        $user =  User::where('email', $email)->first();
+        return isset($user->merchant) ? $user->merchant : null;
     }
 
     /**
@@ -56,5 +82,14 @@ class MerchantService
     public function payout(Affiliate $affiliate)
     {
         // TODO: Complete this method
+        $orders = $affiliate->orders;
+
+        foreach ($orders as $order) {
+            if ($order->refresh()->payout_status == Order::STATUS_PAID) {
+                Queue::push(function (PayoutOrderJob $job) use ($order) {
+                    return $job->order->is($order);
+                });
+            }
+        }
     }
 }
