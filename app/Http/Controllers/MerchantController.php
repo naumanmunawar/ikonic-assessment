@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Merchant;
+use App\Models\Order;
 use App\Services\MerchantService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-use App\Models\Order;
 use Response;
+use Illuminate\Support\Carbon;
 
 class MerchantController extends Controller
 {
@@ -24,7 +24,6 @@ class MerchantController extends Controller
      */
     public function orderStats(Request $request): JsonResponse
     {
-        // TODO: Complete this method
         $to = $request->to;
         $from = $request->from;
         $order = Order::whereBetween('created_at', [$from, $to])->get();

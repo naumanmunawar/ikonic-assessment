@@ -37,7 +37,7 @@ class ApiService
      * @return void
      * @throws RuntimeException
      */
-    public function sendPayout(string $email, float $amount)
+    public function sendPayout($email, $amount)
     {
         Mail::to($email)->send(new SendPayout($amount, 'Payout Confirmation'));
     }

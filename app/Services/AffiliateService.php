@@ -10,10 +10,14 @@ use App\Models\Order;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use App\Services\ApiService;
+use Illuminate\Foundation\Testing\WithFaker;
 
 
 class AffiliateService
 {
+    use WithFaker;
+
     public function __construct(
         protected ApiService $apiService
     ) {}
@@ -29,12 +33,54 @@ class AffiliateService
      */
     public function register(Merchant $merchant, string $email, string $name, float $commissionRate): Affiliate
     {
-        // TODO: Complete this method
-        $check_user = User::where('email', $email)->first();
 
-       // dd([$merchant->user->email, $email]);
+        if($merchant->user->email == $email) { //check if email use as merchant
 
-        if(!$check_user) {
+            //$user = $this->createNewUser($name, $email); //create new user 
+            $user_id = $merchant->user->id;
+            $merchant_id = $merchant->id;
+
+        } else {
+
+            $user = $this->createNewUser($name, $email); //create new user 
+            $user_id = $user->id;
+            $merchant_id = $merchant->id;
+        }
+
+
+        $apiService = $this->apiService->createDiscountCode($merchant);
+
+
+        $affiliate_check = Affiliate::where('user_id', $user_id)
+        ->where('merchant_id', $merchant_id)
+        ->where('commissionRate', $commissionRate)
+        ->where('discount_code', $apiService['code'])
+        ->first();
+
+        if(!$affiliate_check) {
+            $affiliate_data = [
+                'user_id' => $user_id,
+                'merchant_id' => $merchant_id,
+                'commission_rate' => $commissionRate,
+                'discount_code' => $apiService['code']
+            ];
+        }
+
+        $affiliate = Affiliate::create($affiliate_data);
+
+        if($affiliate) {
+            Mail::to($email)->send(new AffiliateCreated($affiliate));
+        }
+
+        return $affiliate;
+
+    }
+
+    public function createNewUser($name, $email) {
+
+        $user_check = User::where('email', $email)->first();
+
+        if(!$user_check) {
             $user_data = [
                 'name' => $name,
                 'email' => $email,
@@ -43,23 +89,9 @@ class AffiliateService
             ];
 
             $user = User::create($user_data);
-            $user_record = User::find($user->id);
-            $user_id = $user_record->id;
-        } else {
-            $user_id = $check_user->id;
+            return User::find($user->id);
         }
-
-        $affiliate_data = [
-            'user_id' => $user_id,
-            'merchant_id' => $merchant->id,
-            'commission_rate' => $commissionRate,
-            'discount_code' => ''
-        ];
-
-        $affiliate = Affiliate::create($affiliate_data);
-        Mail::to($email)->send(new AffiliateCreated($affiliate));
-
-        return $affiliate;
-
+        
+        return $user_check;
     }
 }

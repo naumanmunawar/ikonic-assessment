@@ -24,8 +24,6 @@ class WebhookController extends Controller
     {
         $data_array = $request->all();
         $this->orderService->processOrder($data_array);
-
         return Response::json([]);
-
     }
 }

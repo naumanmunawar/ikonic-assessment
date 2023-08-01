@@ -81,14 +81,11 @@ class MerchantService
      */
     public function payout(Affiliate $affiliate)
     {
-        // TODO: Complete this method
         $orders = $affiliate->orders;
 
         foreach ($orders as $order) {
-            if ($order->refresh()->payout_status == Order::STATUS_PAID) {
-                Queue::push(function (PayoutOrderJob $job) use ($order) {
-                    return $job->order->is($order);
-                });
+            if ($order->refresh()->payout_status == Order::STATUS_UNPAID) {
+                 dispatch(new PayoutOrderJob($order));
             }
         }
     }

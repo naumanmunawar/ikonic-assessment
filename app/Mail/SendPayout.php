@@ -8,7 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class AffiliateCreated extends Mailable
+class SendPayout extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -18,7 +18,7 @@ class AffiliateCreated extends Mailable
      * @return void
      */
     public function __construct(
-        public Affiliate $affiliate
+        public $amount
     ) {}
 
     /**
@@ -28,6 +28,6 @@ class AffiliateCreated extends Mailable
      */
     public function build()
     {
-        return $this->view('name');
+        return $this->view('welcome');
     }
 }

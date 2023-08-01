@@ -26,7 +26,6 @@ class OrderService
      */
     public function processOrder(array $data)
     {
-        // TODO: Complete this method
         $merchant = Merchant::where('domain', $data['merchant_domain'])->first();
         $user = User::where('email', $data['customer_email'])->first(); 
         $affiliate = Affiliate::where('merchant_id', $merchant->id)->first();
